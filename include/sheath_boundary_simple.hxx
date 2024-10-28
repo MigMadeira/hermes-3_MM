@@ -76,6 +76,7 @@ struct SheathBoundarySimple : public Component {
 private:
   BoutReal Ge; // Secondary electron emission coefficient
   BoutReal sin_alpha; // sin of angle between magnetic field and wall.
+  BoutReal vD; ///< Drift velocity for 1D drift model
 
   BoutReal gamma_e; ///< Electron sheath heat transmission
   BoutReal gamma_i; ///< Ion sheath heat transmission

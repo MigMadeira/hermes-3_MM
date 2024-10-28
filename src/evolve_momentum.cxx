@@ -49,6 +49,8 @@ EvolveMomentum::EvolveMomentum(std::string name, Options &alloptions, Solver *so
 
   hyper_z = options["hyper_z"].doc("Hyper-diffusion in Z").withDefault(-1.0);
 
+  vD = options["vD"].doc("Drift velocity for 1D models").withDefault(-1.0);
+
   V.setBoundary(std::string("V") + name);
 
   diagnose = options["diagnose"]
@@ -199,6 +201,11 @@ void EvolveMomentum::finally(const Options &state) {
     auto* coord = N.getCoordinates();
     ddt(NV) -= hyper_z * SQ(SQ(coord->dz)) * D4DZ4(NV);
   }
+
+  if (vD > 0.){
+    ddt(NV) -= vD*FV::Div_par_mod<hermes::Limiter>(N, V, fastest_wave, flow_ylow);
+    ddt(NV) -= Grad_par(N);
+  } //add a check for 1D later
 
   // Other sources/sinks
   if (species.isSet("momentum_source")) {

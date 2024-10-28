@@ -91,6 +91,8 @@ SheathBoundarySimple::SheathBoundarySimple(std::string name, Options& alloptions
     throw BoutException("Range of sin_alpha must be between 0 and 1");
   }
 
+  vD = options["vD"].doc("Drift velocity for 1D models").withDefault(-1.0);
+
   gamma_e = options["gamma_e"]
     .doc("Electron sheath heat transmission coefficient")
     .withDefault(3.5);
@@ -230,6 +232,11 @@ void SheathBoundarySimple::transform(Options& state) {
             BoutReal C_i_sq = (sheath_ion_polytropic * tisheath + Zi * tesheath) / Mi;
 
             BoutReal visheath = -sqrt(C_i_sq);
+
+            if (vD > 0){
+              visheath *= (1+vD);
+            }
+
             if (Vi[i] < visheath) {
               visheath = Vi[i];
             }
@@ -261,6 +268,10 @@ void SheathBoundarySimple::transform(Options& state) {
             BoutReal C_i_sq = (sheath_ion_polytropic * tisheath + Zi * tesheath) / Mi;
 
             BoutReal visheath = sqrt(C_i_sq);
+
+            if (vD > 0){
+              visheath *=(1-vD);
+            }
             if (Vi[i] > visheath) {
               visheath = Vi[i];
             }

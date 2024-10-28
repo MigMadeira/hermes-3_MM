@@ -45,6 +45,8 @@ EvolveDensity::EvolveDensity(std::string name, Options& alloptions, Solver* solv
 
   hyper_z = options["hyper_z"].doc("Hyper-diffusion in Z").withDefault(-1.0);
 
+  vD = options["vD"].doc("Drift velocity for 1D models").withDefault(-1.0);
+
   evolve_log = options["evolve_log"]
                    .doc("Evolve the logarithm of density?")
                    .withDefault<bool>(false);
@@ -238,6 +240,10 @@ void EvolveDensity::finally(const Options& state) {
       //       so that upwinding is handled correctly
       ddt(N) -= Div_n_g_bxGrad_f_B_XZ(N, V, -Apar_flutter);
     }
+
+    if (vD > 0.){
+      ddt(N) -= vD*Grad_par(N);
+    } //add a check for 1D later
   }
 
   if (low_n_diffuse) {
