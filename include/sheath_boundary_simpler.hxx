@@ -1,6 +1,6 @@
 #pragma once
-#ifndef SHEATH_BOUNDARY_H
-#define SHEATH_BOUNDARY_H
+#ifndef SHEATH_BOUNDARY_SIMPLER_H
+#define SHEATH_BOUNDARY_SIMPLER_H
 
 #include "component.hxx"
 
@@ -8,28 +8,26 @@
 ///
 /// This is a collective component, because it couples all charged species
 ///
-/// These are based on
-/// "Boundary conditions for the multi-ion magnetized plasma-wall transition"
-///  by D.Tskhakaya, S.Kuhn. JNM 337-339 (2005), 405-409
+/// This implements a simple boundary condition, where each species
+/// goes to their own sound velocity at the sheath entrance.
 ///
 /// Notes:
-///   - The approximation used here is for ions having similar
-///     gyro-orbit sizes
-///   - No boundary condition is applied to neutral species
-///   - Boundary conditions are applied to field-aligned fields
-///     using to/fromFieldAligned
+///   - It is recommended to use SheathBoundary rather than SheathBoundarySimple;
+///     this is here for comparison to that more complete model.
 ///
-struct SheathBoundary : public Component {
+struct SheathBoundarySimpler : public Component {
   /// # Input options
-  /// - <name>  e.g. "sheath_boundary"
+  /// - <name>  e.g. "sheath_boundary_simple"
   ///   - lower_y                  Boundary on lower y?
   ///   - upper_y                  Boundary on upper y?
+  ///   - gamma_e                  Electron sheath heat transmission coefficient
+  ///   - gamma_i                  Ion sheath heat transmission coefficient
+  ///   - sheath_ion_polytropic    Ion polytropic coefficient in Bohm sound speed. Default 1.
   ///   - wall_potential           Voltage of the wall [Volts]
-  ///   - floor_potential          Apply floor to sheath potential?
   ///   - secondary_electron_coef  Effective secondary electron emission coefficient
   ///   - sin_alpha                Sine of the angle between magnetic field line and wall surface (0 to 1)
   ///   - always_set_phi           Always set phi field? Default is to only modify if already set
-  SheathBoundary(std::string name, Options &options, Solver *);
+  SheathBoundarySimpler(std::string name, Options &options, Solver *);
 
   ///
   /// # Inputs
@@ -76,23 +74,21 @@ struct SheathBoundary : public Component {
   ///
   void transform(Options &state) override;
 private:
-  BoutReal Ge; // Secondary electron emission coefficient
-  BoutReal sin_alpha; // sin of angle between magnetic field and wall.
   BoutReal vD; ///< Drift velocity for 1D drift model
+
+  BoutReal sheath_ion_polytropic; ///< Polytropic coefficient in sheat velocity
   
   bool lower_y; // Boundary on lower y?
   bool upper_y; // Boundary on upper y?
 
-  bool always_set_phi; ///< Set phi field?
+  bool no_flow; ///< No flow speed, only remove energy
 
-  Field3D wall_potential; ///< Voltage at the wall. Normalised units.
-
-  bool floor_potential; ///< Apply floor to sheath potential?
+  BoutReal density_boundary_mode, pressure_boundary_mode, temperature_boundary_mode; ///< BC mode: 0=LimitFree, 1=ExponentialFree, 2=LinearFree
 };
 
 namespace {
-RegisterComponent<SheathBoundary>
-    registercomponentsheathboundary("sheath_boundary");
+RegisterComponent<SheathBoundarySimpler>
+    registercomponentsheathboundarysimpler("sheath_boundary_simpler");
 }
 
-#endif // SHEATH_BOUNDARY_H
+#endif // SHEATH_BOUNDARY_SIMPLER_H

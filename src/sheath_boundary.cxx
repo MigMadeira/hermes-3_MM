@@ -77,6 +77,8 @@ SheathBoundary::SheathBoundary(std::string name, Options &alloptions, Solver *) 
     throw BoutException("Range of sin_alpha must be between 0 and 1");
   }
 
+  vD = options["vD"].doc("Drift velocity for 1D models").withDefault(-1.0);
+
   lower_y = options["lower_y"].doc("Boundary on lower y?").withDefault<bool>(true);
   upper_y = options["upper_y"].doc("Boundary on upper y?").withDefault<bool>(true);
 
@@ -556,7 +558,11 @@ void SheathBoundary::transform(Options &state) {
           // Ion sheath heat transmission coefficient
           const BoutReal gamma_i = 2.5 + 0.5 * Mi * C_i_sq / tisheath;
 
-          const BoutReal visheath = - sqrt(C_i_sq); // Negative -> into sheath
+          BoutReal visheath = - sqrt(C_i_sq); // Negative -> into sheath
+
+          if (vD > 0){
+            visheath *= (1+vD);
+          }
 
           // Set boundary conditions on flows
           Vi[im] = 2. * visheath - Vi[i];
@@ -629,7 +635,11 @@ void SheathBoundary::transform(Options &state) {
 
           const BoutReal gamma_i = 2.5 + 0.5 * Mi * C_i_sq / tisheath; // + Δγ 
 
-          const BoutReal visheath = sqrt(C_i_sq); // Positive -> into sheath
+          BoutReal visheath = sqrt(C_i_sq); // Positive -> into sheath
+
+          if (vD > 0){
+            visheath *= (1-vD);
+          }
 
           // Set boundary conditions on flows
           Vi[ip] = 2. * visheath - Vi[i];

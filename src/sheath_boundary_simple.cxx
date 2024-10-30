@@ -148,11 +148,18 @@ void SheathBoundarySimple::transform(Options& state) {
 
   Options& allspecies = state["species"];
   Options& electrons = allspecies["e"];
-
+   
   // Need electron properties
   // Not const because boundary conditions will be set
   Field3D Ne = toFieldAligned(floor(GET_NOBOUNDARY(Field3D, electrons["density"]), 0.0));
   Field3D Te = toFieldAligned(GET_NOBOUNDARY(Field3D, electrons["temperature"]));
+
+  // Field3D Ne = IS_SET(electrons["density"])
+  //   ? toFieldAligned(floor(GET_NOBOUNDARY(Field3D, electrons["density"]), 0.0))
+  //   : toFieldAligned(floor(GET_NOBOUNDARY(Field3D, allspecies["i"]["density"]), 0.0));
+  // Field3D Te = IS_SET(electrons["temperature"]) 
+  //   ? toFieldAligned(GET_NOBOUNDARY(Field3D, electrons["temperature"]))
+  //   : toFieldAligned(GET_NOBOUNDARY(Field3D, allspecies["i"]["temperature"]));
   Field3D Pe = IS_SET_NOBOUNDARY(electrons["pressure"])
     ? toFieldAligned(getNoBoundary<Field3D>(electrons["pressure"]))
     : Te * Ne;
