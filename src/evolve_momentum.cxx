@@ -49,7 +49,8 @@ EvolveMomentum::EvolveMomentum(std::string name, Options &alloptions, Solver *so
 
   hyper_z = options["hyper_z"].doc("Hyper-diffusion in Z").withDefault(-1.0);
 
-  vD = options["vD"].doc("Drift velocity for 1D models").withDefault(-1.0);
+  vD = options["vD"].doc("Drift velocity for 1D models").withDefault(0.0);
+  NV_propto_dN_dx = options["NV_propto_dN_dx"].doc("term proportional to dN/dx in the momentum equation").withDefault(-1.0);
 
   V.setBoundary(std::string("V") + name);
 
@@ -202,11 +203,14 @@ void EvolveMomentum::finally(const Options &state) {
     ddt(NV) -= hyper_z * SQ(SQ(coord->dz)) * D4DZ4(NV);
   }
 
-  if (vD > 0.){
+  if (vD != 0.){
     ddt(NV) -= vD*FV::Div_par_mod<hermes::Limiter>(N, V, fastest_wave, flow_ylow);
-    ddt(NV) -= Grad_par(N);
   } //add a check for 1D later
 
+  if (NV_propto_dN_dx > 0){
+    ddt(NV) -= NV_propto_dN_dx*Grad_par(N);
+  }
+  
   // Other sources/sinks
   if (species.isSet("momentum_source")) {
     momentum_source = get<Field3D>(species["momentum_source"]);
