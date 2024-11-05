@@ -1,0 +1,85 @@
+# 1D system with:
+#  - no-flow boundary on lower Y
+#  - sheath boundary on upper Y
+#  - Evolving electron and ion species
+#  - No heat conduction
+#  - Uniform source of heat and particles throughout domain
+
+nout = 200
+timestep = 300000
+
+MXG = 0  # No guard cells in X
+
+[mesh]
+nx = 1
+ny = 320 #256  #200 #256 #320 #640   # Resolution along field-line
+nz = 1
+
+length = 640           # Length of the domain in meters
+length_xpt = 80   # Length from midplane to X-point [m]
+
+dy = length / ny
+
+ypos = y * length / (2*pi) # Y position [m]
+
+ixseps1 = 0
+ixseps2 = 0
+
+[hermes]
+# Evolve ion density, ion and electron pressure, then calculate force on ions due
+# to electron pressure using electron force balance
+components = i
+
+loadmetric = false        # Use Rxy, Bpxy etc?
+normalise_metric = true  # Normalise the input metric?
+
+Nnorm = 1e19
+Bnorm = 2.5
+Tnorm = 80
+
+qe = 1.602176634e-19;           # Electron charge
+Mp = 1.672621898e-27;   # Proton mass
+vi_norm = sqrt(Tnorm * qe / Mp)
+ion_sound_speed = sqrt(2*Tnorm * qe / Mp)
+drift_velocity = -62 # meters per second
+field_line_pitch_angle = 0.001 # radians
+vD = drift_velocity/tan(field_line_pitch_angle)/vi_norm
+
+
+[solver]
+mxstep = 10000
+rtol = 1e-8
+
+####################################
+
+[i]  # Ions
+type = evolve_density, evolve_momentum, fixed_temperature
+
+charge = 1
+AA = 1.0
+
+temperature = hermes:Tnorm # Fixed temperature [eV]
+
+diagnose = true
+
+vD = hermes:vD
+
+NV_propto_dN_dx = 1
+
+[Ni]
+
+function = 1
+
+# Particles per m^2 per second input
+flux = hermes:Nnorm * hermes:ion_sound_speed # the field line pitch angle is absorbed by the grid.
+source = (flux/(mesh:length - 2*mesh:length_xpt))*H(mesh:length - mesh:length_xpt - mesh:ypos)*H(mesh:ypos - mesh:length_xpt)
+
+bndry_ydown = width(neumann,2)
+bndry_yup = width(neumann,2)
+
+[NVi]
+function = (2*y/(2*pi) - 1 - hermes:vD)*hermes:ion_sound_speed/hermes:vi_norm
+
+[Vi]
+bndry_ydown = width(relax(dirichlet((-hermes:ion_sound_speed/hermes:vi_norm - hermes:vD))),10)
+bndry_yup = width(relax(dirichlet((hermes:ion_sound_speed/hermes:vi_norm - hermes:vD))),10)
