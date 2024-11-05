@@ -5,7 +5,7 @@
 #  - No heat conduction
 #  - Uniform source of heat and particles throughout domain
 
-nout = 200
+nout = 80 
 timestep = 1000000
 
 MXG = 0
@@ -16,7 +16,7 @@ ny = 640   # Resolution along field-line
 nz = 1
 
 length = 640           # Length of the domain in meters
-length_xpt = 160   # Length from midplane to X-point [m]
+length_xpt = 80   # Length from midplane to X-point [m]
 
 dy = length / ny
 
@@ -67,7 +67,7 @@ function = 1
 
 #flux = 1000*hermes:Nnorm * hermes:ion_sound_speed * sin(hermes:field_line_pitch_angle) # Particles per m^2 per second input
 flux = hermes:Nnorm * hermes:ion_sound_speed # the field line pitch angle is absorbed by the grid.
-source = (flux/(mesh:length_xpt))*H(mesh:length - mesh:length_xpt - mesh:ypos)*H(mesh:ypos - mesh:length_xpt)
+source = (flux/(mesh:length - 2*mesh:length_xpt))*H(mesh:length - mesh:length_xpt - mesh:ypos)*H(mesh:ypos - mesh:length_xpt)
 
 bndry_ydown = width(neumann,2)
 bndry_yup = width(neumann,2)
@@ -81,4 +81,3 @@ function = (2*y/(2*pi) - 1)*hermes:ion_sound_speed/hermes:vi_norm
 # The results are a bit sensitive to the BC, particularly if I only set the BC at the last point I get some wobbles.
 bndry_ydown = width(relax(dirichlet(-hermes:ion_sound_speed/hermes:vi_norm)),5)
 bndry_yup = width(relax(dirichlet(hermes:ion_sound_speed/hermes:vi_norm)),5)
-

@@ -46,7 +46,7 @@ density = ds.Ni[-1,:]
 #these parameters need to be set according to the input file. 
 max_density = max(density.values)
 length = 640
-y_xpoint = 160
+y_xpoint = 80
 
 fig, ax1 = plt.subplots(constrained_layout=True, figsize=(7,5))
 ax2 = ax1.twinx()
