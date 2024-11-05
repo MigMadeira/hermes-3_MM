@@ -50,9 +50,8 @@ y_xpoint = 80
 
 fig, ax1 = plt.subplots(constrained_layout=True, figsize=(7,5))
 ax2 = ax1.twinx()
-ax1.set_xticks([0, y_xpoint, length/2, length/2+y_xpoint, length])
+ax1.set_xticks([0, y_xpoint, length/2, length-y_xpoint, length])
 ax1.set_xticklabels(['lower divertor', 'lower X-point', '0', 'upper X-point', 'upper divertor'], minor=False, rotation=45)
-ax1.set_xlabel('y')
 ax1.set_title('Profiles in absence of drifts')
 
 ax1.plot(parallel_velocity, color='tab:blue')
