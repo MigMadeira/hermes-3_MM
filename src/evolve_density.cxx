@@ -125,6 +125,12 @@ EvolveDensity::EvolveDensity(std::string name, Options& alloptions, Solver* solv
       }
     }
   }
+  
+  sink_propto_N = 0.0;
+  sink_propto_N = n_options["sink_propto_N"]
+    .doc("Sink term in ddt(N" + name + std::string(") proportional to N. Units [1/s]"))
+    .withDefault(sink_propto_N)
+    /Omega_ci;
 
   neumann_boundary_average_z = alloptions[std::string("N") + name]["neumann_boundary_average_z"]
     .doc("Apply neumann boundary with Z average?")
@@ -284,6 +290,12 @@ void EvolveDensity::finally(const Options& state) {
     Sn += get<Field3D>(species["density_source"]);
   }
   ddt(N) += Sn;
+  
+  ddt(N) -= sink_propto_N * N;
+  //if (species.isSet("sink_propto_N")) {
+  //  sink_propto_N = get<Field3D>(species["sink_propto_N"]);
+  //  ddt(N) -= sink_propto_N * N;
+  //}
 
   // Scale time derivatives
   if (state.isSet("scale_timederivs")) {
