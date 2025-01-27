@@ -71,6 +71,15 @@ ax2.set_yticks([0, max_density])
 ax2.set_yticklabels(['0', '$n_\mathrm{{max}}$'], minor=False)
 ax2.tick_params(axis='y', labelcolor='tab:red')
 ax2.set_ylabel('Density', color='tab:red')
+
+density_kriete = np.load("../plot_db/Kriete_drifts_density.npy")
+parallel_velocity_kriete = np.load("../plot_db/Kriete_drifts_parallel_velocity.npy")
+y_kriete = np.load("../plot_db/Kriete_drifts_y.npy")
+poloidal_velocity_kriete = parallel_velocity_kriete * np.sin(field_line_pitch_angle) + drift_velocity * np.cos(field_line_pitch_angle)
+ax1.plot((y_kriete+1)*320, parallel_velocity_kriete, linestyle='--', color='k', label=r'$v_\parallel$_Kriete', alpha = 0.5)
+ax1.plot((y_kriete+1)*320, scale_factor * poloidal_velocity_kriete, linestyle=':', color='k', label=fr'${scale_factor:.0f} * v_\theta$_Kriete',alpha = 0.5)
+ax2.plot((y_kriete+1)*320, density_kriete, color='k', alpha = 0.5, label = "density_Kriete")
+
 plt.show()
 
 min_density = min(density.values)

@@ -67,6 +67,15 @@ ax2.set_yticks([0, max_density / 2, max_density])
 ax2.set_yticklabels(['0', '$n_d$', '$2 n_d$'], minor=False)
 ax2.tick_params(axis='y', labelcolor='tab:red')
 ax2.set_ylabel('Density', color='tab:red')
+
+density_kriete = np.load("../plot_db/Kriete_density.npy")
+parallel_velocity_kriete = np.load("../plot_db/Kriete_parallel_velocity.npy")#*np.sqrt(2)
+y_kriete = np.load("../plot_db/Kriete_y.npy")
+ax1.plot((y_kriete+1)*320, parallel_velocity_kriete, linestyle='--', color='k', label=r'$v_\parallel$_Kriete', alpha = 0.5)
+ax2.plot((y_kriete+1)*320, density_kriete, color='k', alpha = 0.5, label = "density_Kriete")
+
+ax1.grid("both")
+ax2.grid()
 plt.show()
 
 print("nd = ",max_density/2)
