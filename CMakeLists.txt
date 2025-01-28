@@ -98,6 +98,7 @@ set(HERMES_SOURCES
     src/detachment_controller.cxx
     src/thermal_force.cxx
     src/ion_viscosity.cxx
+    src/island_drift.cxx
     src/transform.cxx
     src/vorticity.cxx
     include/adas_reaction.hxx
@@ -132,6 +133,7 @@ set(HERMES_SOURCES
     include/integrate.hxx
     include/ion_viscosity.hxx
     include/ionisation.hxx
+    include/island_drift.hxx
     include/loadmetric.hxx
     include/neutral_boundary.hxx
     include/neutral_mixed.hxx

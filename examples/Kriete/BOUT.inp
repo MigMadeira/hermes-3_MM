@@ -1,0 +1,83 @@
+# 1D system with:
+#  - no-flow boundary on lower Y
+#  - sheath boundary on upper Y
+#  - Evolving electron and ion species
+#  - No heat conduction
+#  - Uniform source of heat and particles throughout domain
+
+nout = 80 
+timestep = 1000000
+
+MXG = 0
+
+[mesh]
+nx = 1
+ny = 640   # Resolution along field-line
+nz = 1
+
+length = 640           # Length of the domain in meters
+length_xpt = 80   # Length from midplane to X-point [m]
+
+dy = length / ny
+
+ypos = y * length / (2*pi) # Y position [m]
+
+ixseps1 = 0
+ixseps2 = 0
+
+[hermes]
+# Evolve ion density, ion and electron pressure, then calculate force on ions due
+# to electron pressure using electron force balance
+components = i
+
+loadmetric = false        # Use Rxy, Bpxy etc?
+normalise_metric = true  # Normalise the input metric?
+
+Nnorm = 1e19
+Bnorm = 2.5
+Tnorm = 50
+
+qe = 1.602176634e-19;           # Electron charge
+Mp = 1.672621898e-27;   # Proton mass
+vi_norm = sqrt(Tnorm * qe / Mp)
+ion_sound_speed = sqrt(2*Tnorm * qe / Mp)
+#field_line_pitch_angle = 0.001 # radians 
+
+[solver]
+mxstep = 10000
+
+
+####################################
+
+[i]  # Ions
+type = evolve_density, evolve_momentum, fixed_temperature, island_drift
+
+charge = 1
+AA = 1.0
+
+temperature = hermes:Tnorm # Fixed temperature [eV]
+
+diagnose = true
+
+NV_propto_dN_dx = 0.5*(hermes:ion_sound_speed/hermes:vi_norm)*(hermes:ion_sound_speed/hermes:vi_norm)
+
+[Ni]
+
+function = 1
+
+#flux = 1000*hermes:Nnorm * hermes:ion_sound_speed * sin(hermes:field_line_pitch_angle) # Particles per m^2 per second input
+flux = hermes:Nnorm * hermes:ion_sound_speed # the field line pitch angle is absorbed by the grid.
+source = (flux/(mesh:length - 2*mesh:length_xpt))*H(mesh:length - mesh:length_xpt - mesh:ypos)*H(mesh:ypos - mesh:length_xpt)
+
+bndry_ydown = width(neumann,2)
+bndry_yup = width(neumann,2)
+
+
+[NVi]
+
+function = (2*y/(2*pi) - 1)*hermes:ion_sound_speed/hermes:vi_norm
+
+[Vi]
+# The results are a bit sensitive to the BC, particularly if I only set the BC at the last point I get some wobbles.
+bndry_ydown = width(relax(dirichlet(-hermes:ion_sound_speed/hermes:vi_norm)),5)
+bndry_yup = width(relax(dirichlet(hermes:ion_sound_speed/hermes:vi_norm)),5)
