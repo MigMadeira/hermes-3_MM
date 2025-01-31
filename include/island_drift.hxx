@@ -25,8 +25,9 @@ private:
   BoutReal AA;          ///< Atomic mass e.g. proton = 1
 
   BoutReal vD;         ///< Drift velocity for 1D drift model
-  Field3D  sink_propto_N; ///< density sink proportional to N
+  Field3D  sink_propto_N = 0.0; ///< density sink proportional to N
   BoutReal NV_propto_dN_dx; ///< term proportional to dN/dx in the momentum equation"
+  Field3D flow_ylow;   ///< particle flow diagnostic
 };
 
 namespace {

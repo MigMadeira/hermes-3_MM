@@ -24,19 +24,17 @@ IslandDrift::IslandDrift(std::string name, Options &alloptions,
     vD = options["vD"].doc("Drift velocity for 1D models").withDefault(0.0);
     sink_propto_N = options["sink_propto_N"]
     .doc("Sink term in ddt(N" + name + std::string(") proportional to N. Units [1/s]"))
-    .withDefault(0.0)
+    .withDefault(sink_propto_N)
     /Omega_ci;
-    NV_propto_dN_dx = options["NV_propto_dN_dx"].doc("term proportional to dN/dx in the momentum equation").withDefault(-1.0);
+    NV_propto_dN_dx = options["NV_propto_dN_dx"].doc("term proportional to dN/dx in the momentum equation").withDefault(0.0);
 }
 
 void IslandDrift::transform(Options &state) {
     AUTO_TRACE();
     
     auto& species = state["species"][name];
-    auto& units = state["units"];
 
-    //const auto Nnorm = get<BoutReal>(units["inv_meters_cubed"]);
-    const Field3D N = get<Field3D>(species["density"]); //* Nnorm;     // In m^-3
+    const Field3D N = get<Field3D>(species["density"]);
 
     // Typical wave speed used for numerical diffusion
     Field3D fastest_wave;
@@ -44,35 +42,24 @@ void IslandDrift::transform(Options &state) {
         fastest_wave = get<Field3D>(state["fastest_wave"]);
     } else {
         Field3D T = get<Field3D>(species["temperature"]);
+        Field3D AA = get<Field3D>(species["AA"]);
         fastest_wave = sqrt(T / AA);
-    }
-    
-    Field3D flow_ylow;
-    if (species.isSet("momentum_flux_ylow")) {
-        flow_ylow = get<Field3D>(species["momentum_flow_ylow"]);
     }
 
     Field3D density_drift(0.0);
     Field3D momentum_drift(0.0);
     //Field3D energy_drift(0.0);
-    
-    
-    if (species.isSet("vD")){
-        density_drift  -= vD*Grad_par(N);
-        if (species.isSet("velocity")) {
-            Field3D V = get<Field3D>(species["velocity"]);
-            V.applyBoundary();
-            momentum_drift -= vD*FV::Div_par_mod<hermes::Limiter>(N, V, fastest_wave, flow_ylow);
-        } //add a check for 1D later
-    }
-    
-    if (species.isSet("sink_propto_N")) {
-        density_drift -= sink_propto_N * N;
-    }
 
-    if (species.isSet("NV_propto_dN_dx") && species.isSet("velocity")) {
-        momentum_drift -= NV_propto_dN_dx*Grad_par(N);
-    }
+    density_drift  -= vD*Grad_par(N);
+
+    if (species.isSet("velocity")) {
+        Field3D V = get<Field3D>(species["velocity"]);
+        Field3D NV = get<Field3D>(species["momentum"]);
+        momentum_drift -= vD*FV::Div_par_mod<hermes::Limiter>(N, V, fastest_wave, flow_ylow);
+    } //add a check for 1D later
+
+    density_drift -= sink_propto_N * N;
+    momentum_drift -= NV_propto_dN_dx*Grad_par(N);
 
     add(species["density_source"], density_drift);
     add(species["momentum_source"], momentum_drift); //should check if evolve momentum is on.
