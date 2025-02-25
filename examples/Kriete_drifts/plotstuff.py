@@ -78,8 +78,10 @@ y_kriete = np.load("../plot_db/Kriete_drifts_y.npy")
 poloidal_velocity_kriete = parallel_velocity_kriete * np.sin(field_line_pitch_angle) + drift_velocity * np.cos(field_line_pitch_angle)
 ax1.plot((y_kriete+1)*320, parallel_velocity_kriete, linestyle='--', color='k', label=r'$v_\parallel$_Kriete', alpha = 0.5)
 ax1.plot((y_kriete+1)*320, scale_factor * poloidal_velocity_kriete, linestyle=':', color='k', label=fr'${scale_factor:.0f} * v_\theta$_Kriete',alpha = 0.5)
-ax2.plot((y_kriete+1)*320, density_kriete, color='k', alpha = 0.5, label = "density_Kriete")
+ax2.plot((y_kriete+1)*320, density_kriete, linestyle='--', color='k', alpha = 0.5, label = r"Kriete2023")
 
+ax2.legend(loc = "lower right")
+plt.savefig("Kriete_drifts.png")
 plt.show()
 
 min_density = min(density.values)
