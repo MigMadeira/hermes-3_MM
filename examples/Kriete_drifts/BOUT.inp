@@ -43,7 +43,7 @@ vi_norm = sqrt(Tnorm * qe / Mp)
 ion_sound_speed = sqrt(2*Tnorm * qe / Mp)
 drift_velocity = -62 # meters per second
 field_line_pitch_angle = 0.001 # radians
-vD = drift_velocity/tan(field_line_pitch_angle)/vi_norm
+vD = drift_velocity/vi_norm
 
 
 [solver]
@@ -62,6 +62,7 @@ temperature = hermes:Tnorm # Fixed temperature [eV]
 
 diagnose = true
 
+Theta = hermes:field_line_pitch_angle
 vD = hermes:vD
 
 NV_propto_dN_dx = 1
@@ -78,8 +79,8 @@ bndry_ydown = width(neumann,2)
 bndry_yup = width(neumann,2)
 
 [NVi]
-function = (2*y/(2*pi) - 1 - hermes:vD)*hermes:ion_sound_speed/hermes:vi_norm
+function = (2*y/(2*pi) - 1 - hermes:vD/hermes:field_line_pitch_angle)*hermes:ion_sound_speed/hermes:vi_norm
 
 [Vi]
-bndry_ydown = width(relax(dirichlet((-hermes:ion_sound_speed/hermes:vi_norm - hermes:vD))),10)
-bndry_yup = width(relax(dirichlet((hermes:ion_sound_speed/hermes:vi_norm - hermes:vD))),10)
+bndry_ydown = width(relax(dirichlet((-hermes:ion_sound_speed/hermes:vi_norm - hermes:vD/hermes:field_line_pitch_angle))),10)
+bndry_yup = width(relax(dirichlet((hermes:ion_sound_speed/hermes:vi_norm - hermes:vD/hermes:field_line_pitch_angle))),10)
